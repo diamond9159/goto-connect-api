@@ -18,7 +18,7 @@ var oauthClient = new AuthorizationCode(oauthConfig);
 var expectedStateForAuthorizationCode = crypto.randomBytes(15).toString('hex');
 var authorizationUrl = oauthClient.authorizeURL({
     redirect_uri: process.env.OAUTH_REDIRECT_URI,
-    scope: 'messaging.v1.send',
+    //scope: 'messaging.v1.send',
     state: expectedStateForAuthorizationCode
 });
 console.log('Open in browser to send a SMS: ', authorizationUrl);
@@ -36,7 +36,7 @@ app.get('/login/oauth2/code/goto', async function (req, res) {
     var tokenParams = {
         code: authorizationCode,
         redirect_uri: process.env.OAUTH_REDIRECT_URI,
-        scope: 'messaging.v1.send'
+        //scope: 'messaging.v1.send'
     };
     var tokenResponse = null;
     try {
@@ -45,17 +45,22 @@ app.get('/login/oauth2/code/goto', async function (req, res) {
         console.log('Access Token Error', error.message);
         return;
     }
+
+    console.log({ oauthClient });
+
     var accessToken = tokenResponse.token.access_token;
+    console.log(accessToken);
+
+    var phoneNumberId = "5939fa47-367d-4011-9517-8534847db57d";
+
     var options = {
-        method: 'POST',
-        url: 'https://api.jive.com/messaging/v1/messages',
+        method: 'GET',
+        url: `https://api.jive.com/call-reports/v1/reports/phone-number-activity/${phoneNumberId}?startTime=2023-05-03T00:01:00Z&endTime=2023-05-03T23:59:50Z`,
         headers: {
             Authorization: `Bearer ${accessToken}`,
             'content-type': 'application/json'
         },
         data: {
-            ownerPhoneNumber: '+15145550100',
-            contactPhoneNumbers: ['+15145550199'],
             body: 'Congratulations! You have successfully completed the tutorial!'
         }
     };
